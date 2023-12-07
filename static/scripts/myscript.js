@@ -11,7 +11,7 @@ let outputRelays = [0,0,0,0,0];             // 全4個のアウトプットに�
 
 let isHumiTry, isContecTry, isLEDTry;       // 温湿度計・コンテック・育成LEDがトライか本番か
 let isNightSense;                           // 夜間でも光センサー取得するか
-
+let volt_status;                            // コンテックのバッテリーリレー状態
 
 // バッテリー設定　この数値はサンプルで、実際は設定ファイルから読み取る
 let Ah = 100;                       // アンペアアワー
@@ -502,7 +502,7 @@ async function getContec(isTry, isLightCnt) {
         const dict = JSON.parse(data);
         try {                                                           // センサー値取得できていたら
             // 電圧リレーの状態
-            const volt_status = dict["volt"];                           // コンテックの電圧
+            volt_status = dict["volt"];                                 // コンテックの電圧
             if (volt_status == "青" ) {                                  // 「青」ならば
                 $(".batt_blue").css("visibility","visible");            // グラフの青バーを表示
                 $(".batt_green").css("visibility","visible");           // グラフの緑バーを表示
@@ -572,14 +572,14 @@ async function getContec(isTry, isLightCnt) {
                                 isLightChange = true;                           // 点灯消灯状態　変化する
                                 const lightSeconds = dayjs().diff(lightOnTime, "seconds") + 5;  // lightOnTimeから今までの時間（秒） 念のため5秒プラスしておく
                                 const lightMinutes = Math.trunc(lightSeconds/60);               // 秒を分にする
-                                //msg = "バッテリーが不足気味なので消灯します"
-                                msg = "消灯します"
+                                msg = "バッテリーが不足気味なので消灯します"
+                                //msg = "消灯します"
                                 //msg += "　点灯時間 " + lightMinutes + "分";
                                 addMsg(time + "　" + msg);
                             } else {                                            // さっきまでも消灯していたら
                                 isLightChange = false;                          // 点灯消灯状態　変化しない
-                                //msg = "バッテリーが不足気味で消灯を継続します"
-                                msg = "消灯を継続します"
+                                msg = "バッテリーが不足気味で消灯を継続します"
+                                //msg = "消灯を継続します"
                                 addMsg(time + "　" + msg);
                             };
                         };
@@ -779,15 +779,26 @@ async function getTimeMode() {
                 isLED = false;              // 消灯する
                 break;
             case "夕方":                      // 夕方モードならば
-                isForce = true;             // 強制的に
-                isLED = true;               // 点灯する
+                if (volt_status == "黄") {       // バッテリ残量足りなかったら
+                    isForce = true;             // 強制的に
+                    isLED = false               // 消灯する
+                } else {                        // バッテリ残量十分あれば
+                    isForce = true;             // 強制的に
+                    isLED = true;               // 点灯する                    
+                };
                 break;
             case "昼":                       // 昼モードならば
-                isForce = false;            // 強制ではない
+                isForce = false;                // 強制ではない
+                isLED = false;                  // いったん消灯する
                 break;
             case "朝":                       // 朝モードならば
-                isForce = true;             // 強制的に
-                isLED = true;               // 点灯する
+                if (volt_status == "黄") {       // バッテリ残量足りなかったら
+                    isForce = true;             // 強制的に
+                    isLED = false;              // 消灯する
+                } else {                        // バッテリ残量十分あれば
+                    isForce = true;             // 強制的に
+                    isLED = true;               // 点灯する                    
+                };
                 break;
             default:                        // それ以外（「センシング」）ならば
                 isForce = false;            // 強制ではない

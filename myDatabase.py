@@ -110,7 +110,7 @@ class DB():
             df = self.get_temperature(date)                             # その日の温湿度データを取得する
             max_temp = df["temperature"].max()                          # その日の最高気温
             min_temp = df["temperature"].min()                          # その日の最低気温
-            mean_temp = (max_temp+min_temp)/2                           # 最高気温と最低気温の中間
+            mean_temp = round((max_temp+min_temp)/2 , 1)                # 最高気温と最低気温の中間
             if summary_exists:                                          # サマリーにその日のデータがあれば更新する
                 sql = f"UPDATE summary"\
                         f" SET max_temp={max_temp}, min_temp={min_temp}, mean_temp={mean_temp}"\
