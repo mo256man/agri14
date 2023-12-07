@@ -137,6 +137,23 @@ $(async function() {
         }
     })
 
+    // 育成LED強制点灯ボタンを押す（手動操作時のみ）
+    $("#btnLedOn").on("touchstart", async function(){
+        if (! isAuto) {
+            $("#imgLedOn").attr("src", "static/images/btnRedOn.png");
+            await enpowerLED(true);
+        }
+    })
+
+    // 育成LED強制点灯ボタンを離す（手動操作時のみ）
+    $("#btnLedOn").on("touchend", async function(){
+        if (! isAuto) {
+            $("#imgLedOn").attr("src", "static/images/btnRedOff.png");
+            await enpowerLED(false);
+            showLedLamp(false);
+        }
+    })
+
     // 設定画面を出す
     $("#btnConfig").on("click", function(){
         openPopupWindow("config_window");
